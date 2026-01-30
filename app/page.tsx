@@ -1,65 +1,257 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react"
+
+interface Task {
+  id: string
+  title: string
+  description?: string
+  priority: "low" | "medium" | "high"
+  status: "todo" | "doing" | "done"
+  createdAt: Date
+}
+
+export default function KanbanBoard() {
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Bienvenue sur ton Kanban !",
+      description: "Drag & drop pour déplacer les tâches",
+      priority: "medium",
+      status: "todo",
+      createdAt: new Date()
+    }
+  ])
+
+  const [newTaskTitle, setNewTaskTitle] = useState("")
+  const [newTaskDescription, setNewTaskDescription] = useState("")
+  const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
+
+  const addTask = () => {
+    if (!newTaskTitle.trim()) return
+
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: newTaskTitle,
+      description: newTaskDescription || undefined,
+      priority: newTaskPriority,
+      status: "todo",
+      createdAt: new Date()
+    }
+
+    setTasks([...tasks, newTask])
+    setNewTaskTitle("")
+    setNewTaskDescription("")
+    setNewTaskPriority("medium")
+  }
+
+  const moveTask = (taskId: string, newStatus: Task["status"]) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId ? { ...task, status: newStatus } : task
+    ))
+  }
+
+  const deleteTask = (taskId: string) => {
+    setTasks(tasks.filter(task => task.id !== taskId))
+  }
+
+  const tasksByStatus = (status: Task["status"]) => {
+    return tasks.filter(task => task.status === status)
+  }
+
+  const getPriorityColor = (priority: Task["priority"]) => {
+    switch (priority) {
+      case "high": return "bg-red-100 text-red-800 border-red-300"
+      case "medium": return "bg-yellow-100 text-yellow-800 border-yellow-300"
+      case "low": return "bg-green-100 text-green-800 border-green-300"
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl font-bold text-white mb-2">
+            📋 Kanban Tasks
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-purple-200 text-lg">
+            Collaboration Pierre & Arthur
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Add Task Form */}
+        <div className="mb-8 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+          <div className="flex gap-4 flex-wrap">
+            <input
+              type="text"
+              placeholder="Titre de la tâche..."
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <input
+              type="text"
+              placeholder="Description (optionnel)..."
+              value={newTaskDescription}
+              onChange={(e) => setNewTaskDescription(e.target.value)}
+              className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <select
+              value={newTaskPriority}
+              onChange={(e) => setNewTaskPriority(e.target.value as Task["priority"])}
+              className="px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+            >
+              <option value="low" className="text-gray-900">🟢 Bas</option>
+              <option value="medium" className="text-gray-900">🟡 Moyen</option>
+              <option value="high" className="text-gray-900">🔴 Haut</option>
+            </select>
+            <button
+              onClick={addTask}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all hover:scale-105"
+            >
+              ➕ Ajouter
+            </button>
+          </div>
         </div>
-      </main>
+
+        {/* Kanban Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Todo Column */}
+          <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-3xl">📝</span>
+              <h2 className="text-2xl font-bold text-white">
+                À faire
+              </h2>
+              <span className="ml-auto bg-purple-500/30 text-purple-200 px-3 py-1 rounded-full text-sm font-semibold">
+                {tasksByStatus("todo").length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {tasksByStatus("todo").map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onMove={(status) => moveTask(task.id, status)}
+                  onDelete={() => deleteTask(task.id)}
+                  getPriorityColor={getPriorityColor}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Doing Column */}
+          <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-3xl">🚧</span>
+              <h2 className="text-2xl font-bold text-white">
+                En cours
+              </h2>
+              <span className="ml-auto bg-blue-500/30 text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
+                {tasksByStatus("doing").length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {tasksByStatus("doing").map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onMove={(status) => moveTask(task.id, status)}
+                  onDelete={() => deleteTask(task.id)}
+                  getPriorityColor={getPriorityColor}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Done Column */}
+          <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-3xl">✅</span>
+              <h2 className="text-2xl font-bold text-white">
+                Terminé
+              </h2>
+              <span className="ml-auto bg-green-500/30 text-green-200 px-3 py-1 rounded-full text-sm font-semibold">
+                {tasksByStatus("done").length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {tasksByStatus("done").map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onMove={(status) => moveTask(task.id, status)}
+                  onDelete={() => deleteTask(task.id)}
+                  getPriorityColor={getPriorityColor}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
+}
+
+function TaskCard({ task, onMove, onDelete, getPriorityColor }: {
+  task: Task
+  onMove: (status: Task["status"]) => void
+  onDelete: () => void
+  getPriorityColor: (priority: Task["priority"]) => string
+}) {
+  return (
+    <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20 hover:border-white/40 transition-all hover:scale-[1.02]">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h3 className="text-white font-semibold text-lg flex-1">
+          {task.title}
+        </h3>
+        <button
+          onClick={onDelete}
+          className="text-red-400 hover:text-red-300 transition-colors"
+        >
+          🗑️
+        </button>
+      </div>
+      {task.description && (
+        <p className="text-purple-200 text-sm mb-3">
+          {task.description}
+        </p>
+      )}
+      <div className="flex items-center justify-between">
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+          {task.priority === "high" ? "🔴 Haut" : task.priority === "medium" ? "🟡 Moyen" : "🟢 Bas"}
+        </span>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onMove("todo")}
+            className={`text-sm px-2 py-1 rounded-lg transition-all ${
+              task.status === "todo" ? "opacity-50 cursor-not-allowed" : "hover:bg-purple-500/30 text-purple-200"
+            }`}
+            disabled={task.status === "todo"}
+          >
+            📝
+          </button>
+          <button
+            onClick={() => onMove("doing")}
+            className={`text-sm px-2 py-1 rounded-lg transition-all ${
+              task.status === "doing" ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500/30 text-blue-200"
+            }`}
+            disabled={task.status === "doing"}
+          >
+            🚧
+          </button>
+          <button
+            onClick={() => onMove("done")}
+            className={`text-sm px-2 py-1 rounded-lg transition-all ${
+              task.status === "done" ? "opacity-50 cursor-not-allowed" : "hover:bg-green-500/30 text-green-200"
+            }`}
+            disabled={task.status === "done"}
+          >
+            ✅
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
