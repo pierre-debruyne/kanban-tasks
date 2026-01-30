@@ -10,7 +10,6 @@ import {
 } from "@dnd-kit/core"
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable
 } from "@dnd-kit/sortable"
@@ -119,7 +118,6 @@ export default function KanbanBoard() {
     }
   ])
 
-  const [activeId, setActiveId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskDescription, setNewTaskDescription] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
@@ -167,16 +165,14 @@ export default function KanbanBoard() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (over && over.id !== active?.id) {
-      const activeTask = tasks.find(t => t.id === active?.id)
+    if (over && over.id && active?.id && over.id !== active.id) {
+      const activeTask = tasks.find(t => t.id === active.id)
       const targetColumnId = over.id as Task["status"]
 
       if (activeTask && targetColumnId) {
         moveTask(active.id, targetColumnId)
       }
     }
-
-    setActiveId(null)
   }
 
   const columnIds: Task["status"][] = ["todo", "doing", "done"]
@@ -246,6 +242,7 @@ export default function KanbanBoard() {
               return (
                 <SortableContext items={tasks.map(t => t.id)} id={status}>
                   <Column
+                    key={status}
                     id={status}
                     tasks={tasks}
                     emoji={columnConfig.emoji}
