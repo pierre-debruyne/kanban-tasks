@@ -3,9 +3,9 @@
 import { useState } from "react"
 import {
   DndContext,
-  useDroppable,
-  DragOverlay,
   closestCenter,
+  PointerSensor,
+  useSensor,
   DragEndEvent
 } from "@dnd-kit/core"
 import {
@@ -38,19 +38,21 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
     listeners,
     setNodeRef,
     transform,
-    transition
+    transition,
+    isDragging
   } = useSortable({ id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition
+    transition,
+    opacity: isDragging ? 0.5 : 1
   }
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20 hover:border-white/40 transition-all"
+      className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20 hover:border-white/40 transition-all cursor-move"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-white font-semibold text-lg flex-1">
@@ -163,10 +165,23 @@ export default function KanbanBoard() {
     }
   }
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10
+      }
+    })
+  )
+
+  const handleDragStart = (event: any) => {
+    const { active } = event
+    setActiveId(active.id as string)
+  }
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (over && over.id && active?.id && over.id !== active.id) {
+    if (over && active?.id && over.id !== active.id) {
       const activeTask = tasks.find(t => t.id === active.id)
       const targetColumnId = over.id as Task["status"]
 
@@ -182,7 +197,9 @@ export default function KanbanBoard() {
 
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -263,12 +280,6 @@ export default function KanbanBoard() {
               )
             })}
           </div>
-
-          <DragOverlay>
-            <div className="bg-white/20 backdrop-blur rounded-xl p-4 border border-white/40">
-              Glisser en cours...
-            </div>
-          </DragOverlay>
         </div>
       </div>
     </DndContext>
@@ -294,13 +305,9 @@ function Column({
   onMove: (taskId: string, newStatus: Task["status"]) => void
   onDelete: (taskId: string) => void
 }) {
-  const { setNodeRef } = useDroppable({
-    id
-  })
-
   return (
     <div
-      ref={setNodeRef}
+      id={id}
       className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10 min-h-[500px]"
     >
       <div className="mb-4 flex items-center gap-2">
