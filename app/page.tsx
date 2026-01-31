@@ -53,7 +53,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg p-4 border border-gray-300 shadow-sm hover:shadow-md transition-all cursor-move"
+      className="bg-white rounded-lg p-4 border border-gray-300 hover:border-gray-400 transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-gray-900 font-semibold text-lg flex-1">
@@ -61,7 +61,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
         </h3>
         <button
           onClick={onDelete}
-          className="text-gray-400 hover:text-red-600 transition-colors text-sm"
+          className="text-gray-400 hover:text-gray-600 transition-colors text-sm"
         >
           ✕
         </button>
@@ -73,13 +73,13 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
       )}
       <div className="flex items-center justify-between">
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
-          {task.priority === "high" ? "Haut" : task.priority === "medium" ? "Moyen" : "Bas"}
+          {task.priority === "high" ? "H" : task.priority === "medium" ? "M" : "B"}
         </span>
         <div className="flex gap-2">
           <button
             onClick={() => onMove(task.id, "todo")}
-            className={`text-sm px-2 py-1 rounded transition-colors ${
-              task.status === "todo" ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
+            className={`text-sm px-3 py-1.5 rounded transition-colors ${
+              task.status === "todo" ? "opacity-50 cursor-not-allowed" : "bg-gray-100 hover:bg-gray-200"
             }`}
             disabled={task.status === "todo"}
           >
@@ -87,8 +87,8 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
           </button>
           <button
             onClick={() => onMove(task.id, "doing")}
-            className={`text-sm px-2 py-1 rounded transition-colors ${
-              task.status === "doing" ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
+            className={`text-sm px-3 py-1.5 rounded transition-colors ${
+              task.status === "doing" ? "opacity-50 cursor-not-allowed" : "bg-gray-100 hover:bg-gray-200"
             }`}
             disabled={task.status === "doing"}
           >
@@ -96,8 +96,8 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
           </button>
           <button
             onClick={() => onMove(task.id, "done")}
-            className={`text-sm px-2 py-1 rounded transition-colors ${
-              task.status === "done" ? "text-gray-400 cursor-not-allowed" : "text-green-600 hover:bg-green-50"
+            className={`text-sm px-3 py-1.5 rounded transition-colors ${
+              task.status === "done" ? "opacity-50 cursor-not-allowed" : "bg-gray-100 hover:bg-gray-200"
             }`}
             disabled={task.status === "done"}
           >
@@ -121,6 +121,7 @@ export default function KanbanBoard() {
     }
   ])
 
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskDescription, setNewTaskDescription] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
@@ -159,9 +160,9 @@ export default function KanbanBoard() {
 
   const getPriorityColor = (priority: Task["priority"]) => {
     switch (priority) {
-      case "high": return "bg-red-100 text-red-800 border-red-300"
-      case "medium": return "bg-yellow-100 text-yellow-800 border-yellow-300"
-      case "low": return "bg-green-100 text-green-800 border-green-300"
+      case "high": return "bg-red-100 text-red-900 border-red-200"
+      case "medium": return "bg-yellow-100 text-yellow-900 border-yellow-200"
+      case "low": return "bg-green-100 text-green-900 border-green-200"
     }
   }
 
@@ -213,7 +214,7 @@ export default function KanbanBoard() {
           </div>
 
           {/* Add Task Form */}
-          <div className="mb-8 bg-white rounded-xl p-6 border border-gray-300 shadow-sm">
+          <div className="mb-8 bg-white rounded-xl p-6 border border-gray-300">
             <div className="flex gap-4 flex-wrap">
               <input
                 key="title-input"
@@ -221,7 +222,7 @@ export default function KanbanBoard() {
                 placeholder="Titre de la tâche..."
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-w-[200px] px-4 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
               <input
                 key="description-input"
@@ -229,13 +230,13 @@ export default function KanbanBoard() {
                 placeholder="Description (optionnel)..."
                 value={newTaskDescription}
                 onChange={(e) => setNewTaskDescription(e.target.value)}
-                className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-w-[200px] px-4 py-2.5 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
               <select
                 key="priority-select"
                 value={newTaskPriority}
                 onChange={(e) => setNewTaskPriority(e.target.value as Task["priority"])}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="low">Bas</option>
                 <option value="medium">Moyen</option>
@@ -244,7 +245,7 @@ export default function KanbanBoard() {
               <button
                 key="add-button"
                 onClick={addTask}
-                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2.5 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
               >
                 + Ajouter
               </button>
@@ -256,9 +257,9 @@ export default function KanbanBoard() {
             {columnIds.map((status) => {
               const tasks = tasksByStatus(status)
               const columnConfig = {
-                todo: { title: "À faire", count: tasks.length },
-                doing: { title: "En cours", count: tasks.length },
-                done: { title: "Terminé", count: tasks.length }
+                todo: { title: "À faire" },
+                doing: { title: "En cours" },
+                done: { title: "Terminé" }
               }[status]
 
               return (
@@ -268,7 +269,6 @@ export default function KanbanBoard() {
                     id={status}
                     tasks={tasks}
                     title={columnConfig.title}
-                    count={columnConfig.count}
                     getPriorityColor={getPriorityColor}
                     onMove={moveTask}
                     onDelete={deleteTask}
@@ -287,7 +287,6 @@ function Column({
   id,
   tasks,
   title,
-  count,
   getPriorityColor,
   onMove,
   onDelete
@@ -295,7 +294,6 @@ function Column({
   id: Task["status"]
   tasks: Task[]
   title: string
-  count: { title: string; count: number }
   getPriorityColor: (priority: Task["priority"]) => string
   onMove: (taskId: UniqueIdentifier, newStatus: Task["status"]) => void
   onDelete: (taskId: UniqueIdentifier) => void
@@ -303,12 +301,14 @@ function Column({
   return (
     <div
       id={id}
-      className="bg-gray-200 rounded-xl p-4 min-h-[500px] border border-gray-300"
+      className="bg-gray-200 rounded-xl p-4 border border-gray-300 min-h-[500px]"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-2xl text-gray-700">{title}</span>
-        <span className="ml-auto bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
-          {count}
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-gray-800">
+          {title}
+        </h2>
+        <span className="ml-auto bg-gray-900 text-white px-3 py-1 rounded-full text-sm font-semibold">
+          {tasks.length}
         </span>
       </div>
       <div className="space-y-3">
