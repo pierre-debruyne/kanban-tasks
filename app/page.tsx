@@ -118,6 +118,7 @@ export default function KanbanBoard() {
     }
   ])
 
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskDescription, setNewTaskDescription] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
@@ -173,6 +174,8 @@ export default function KanbanBoard() {
         moveTask(active.id, targetColumnId)
       }
     }
+
+    setActiveId(null)
   }
 
   const columnIds: Task["status"][] = ["todo", "doing", "done"]
@@ -198,6 +201,7 @@ export default function KanbanBoard() {
           <div className="mb-8 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
             <div className="flex gap-4 flex-wrap">
               <input
+                key="title-input"
                 type="text"
                 placeholder="Titre de la tâche..."
                 value={newTaskTitle}
@@ -205,6 +209,7 @@ export default function KanbanBoard() {
                 className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
               <input
+                key="description-input"
                 type="text"
                 placeholder="Description (optionnel)..."
                 value={newTaskDescription}
@@ -212,6 +217,7 @@ export default function KanbanBoard() {
                 className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
               <select
+                key="priority-select"
                 value={newTaskPriority}
                 onChange={(e) => setNewTaskPriority(e.target.value as Task["priority"])}
                 className="px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
@@ -221,6 +227,7 @@ export default function KanbanBoard() {
                 <option value="high" className="text-gray-900">🔴 Haut</option>
               </select>
               <button
+                key="add-button"
                 onClick={addTask}
                 className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all hover:scale-105"
               >
@@ -240,7 +247,7 @@ export default function KanbanBoard() {
               }[status]
 
               return (
-                <SortableContext items={tasks.map(t => t.id)} id={status}>
+                <SortableContext key={`column-${status}`} items={tasks.map(t => t.id)} id={status}>
                   <Column
                     key={status}
                     id={status}
