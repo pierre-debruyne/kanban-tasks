@@ -5,6 +5,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  useSensor,
   DragEndEvent,
   UniqueIdentifier
 } from "@dnd-kit/core"
@@ -52,55 +53,55 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20 hover:border-white/40 transition-all cursor-move"
+      className="bg-white rounded-lg p-4 border border-gray-300 shadow-sm hover:shadow-md transition-all cursor-move"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="text-white font-semibold text-lg flex-1">
+        <h3 className="text-gray-900 font-semibold text-lg flex-1">
           {task.title}
         </h3>
         <button
           onClick={onDelete}
-          className="text-red-400 hover:text-red-300 transition-colors"
+          className="text-gray-400 hover:text-red-600 transition-colors text-sm"
         >
-          🗑️
+          ✕
         </button>
       </div>
       {task.description && (
-        <p className="text-purple-200 text-sm mb-3">
+        <p className="text-gray-600 text-sm mb-3">
           {task.description}
         </p>
       )}
       <div className="flex items-center justify-between">
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}`}>
-          {task.priority === "high" ? "🔴 Haut" : task.priority === "medium" ? "🟡 Moyen" : "🟢 Bas"}
+          {task.priority === "high" ? "Haut" : task.priority === "medium" ? "Moyen" : "Bas"}
         </span>
         <div className="flex gap-2">
           <button
             onClick={() => onMove(task.id, "todo")}
-            className={`text-sm px-2 py-1 rounded-lg transition-all ${
-              task.status === "todo" ? "opacity-50 cursor-not-allowed" : "hover:bg-purple-500/30 text-purple-200"
+            className={`text-sm px-2 py-1 rounded transition-colors ${
+              task.status === "todo" ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
             }`}
             disabled={task.status === "todo"}
           >
-            📝
+            À faire
           </button>
           <button
             onClick={() => onMove(task.id, "doing")}
-            className={`text-sm px-2 py-1 rounded-lg transition-all ${
-              task.status === "doing" ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500/30 text-blue-200"
+            className={`text-sm px-2 py-1 rounded transition-colors ${
+              task.status === "doing" ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
             }`}
             disabled={task.status === "doing"}
           >
-            🚧
+            En cours
           </button>
           <button
             onClick={() => onMove(task.id, "done")}
-            className={`text-sm px-2 py-1 rounded-lg transition-all ${
-              task.status === "done" ? "opacity-50 cursor-not-allowed" : "hover:bg-green-500/30 text-green-200"
+            className={`text-sm px-2 py-1 rounded transition-colors ${
+              task.status === "done" ? "text-gray-400 cursor-not-allowed" : "text-green-600 hover:bg-green-50"
             }`}
             disabled={task.status === "done"}
           >
-            ✅
+            Terminé
           </button>
         </div>
       </div>
@@ -120,7 +121,6 @@ export default function KanbanBoard() {
     }
   ])
 
-  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskDescription, setNewTaskDescription] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
@@ -165,6 +165,12 @@ export default function KanbanBoard() {
     }
   }
 
+  const sensors = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 10
+    }
+  })
+
   const handleDragStart = (event: any) => {
     const { active } = event
     setActiveId(active.id as UniqueIdentifier)
@@ -189,24 +195,25 @@ export default function KanbanBoard() {
 
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gray-100">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8 text-center">
-            <h1 className="text-5xl font-bold text-white mb-2">
-              📋 Kanban Tasks
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Kanban
             </h1>
-            <p className="text-purple-200 text-lg">
+            <p className="text-gray-600 text-lg">
               Collaboration Pierre & Arthur
             </p>
           </div>
 
           {/* Add Task Form */}
-          <div className="mb-8 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+          <div className="mb-8 bg-white rounded-xl p-6 border border-gray-300 shadow-sm">
             <div className="flex gap-4 flex-wrap">
               <input
                 key="title-input"
@@ -214,7 +221,7 @@ export default function KanbanBoard() {
                 placeholder="Titre de la tâche..."
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 key="description-input"
@@ -222,24 +229,24 @@ export default function KanbanBoard() {
                 placeholder="Description (optionnel)..."
                 value={newTaskDescription}
                 onChange={(e) => setNewTaskDescription(e.target.value)}
-                className="flex-1 min-w-[200px] px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="flex-1 min-w-[200px] px-4 py-2 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <select
                 key="priority-select"
                 value={newTaskPriority}
                 onChange={(e) => setNewTaskPriority(e.target.value as Task["priority"])}
-                className="px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="low" className="text-gray-900">🟢 Bas</option>
-                <option value="medium" className="text-gray-900">🟡 Moyen</option>
-                <option value="high" className="text-gray-900">🔴 Haut</option>
+                <option value="low">Bas</option>
+                <option value="medium">Moyen</option>
+                <option value="high">Haut</option>
               </select>
               <button
                 key="add-button"
                 onClick={addTask}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all hover:scale-105"
+                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
               >
-                ➕ Ajouter
+                + Ajouter
               </button>
             </div>
           </div>
@@ -249,9 +256,9 @@ export default function KanbanBoard() {
             {columnIds.map((status) => {
               const tasks = tasksByStatus(status)
               const columnConfig = {
-                todo: { emoji: "📝", title: "À faire", color: "purple" },
-                doing: { emoji: "🚧", title: "En cours", color: "blue" },
-                done: { emoji: "✅", title: "Terminé", color: "green" }
+                todo: { title: "À faire", count: tasks.length },
+                doing: { title: "En cours", count: tasks.length },
+                done: { title: "Terminé", count: tasks.length }
               }[status]
 
               return (
@@ -260,9 +267,8 @@ export default function KanbanBoard() {
                     key={status}
                     id={status}
                     tasks={tasks}
-                    emoji={columnConfig.emoji}
                     title={columnConfig.title}
-                    color={columnConfig.color}
+                    count={columnConfig.count}
                     getPriorityColor={getPriorityColor}
                     onMove={moveTask}
                     onDelete={deleteTask}
@@ -280,18 +286,16 @@ export default function KanbanBoard() {
 function Column({
   id,
   tasks,
-  emoji,
   title,
-  color,
+  count,
   getPriorityColor,
   onMove,
   onDelete
 }: {
   id: Task["status"]
   tasks: Task[]
-  emoji: string
   title: string
-  color: string
+  count: { title: string; count: number }
   getPriorityColor: (priority: Task["priority"]) => string
   onMove: (taskId: UniqueIdentifier, newStatus: Task["status"]) => void
   onDelete: (taskId: UniqueIdentifier) => void
@@ -299,15 +303,12 @@ function Column({
   return (
     <div
       id={id}
-      className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10 min-h-[500px]"
+      className="bg-gray-200 rounded-xl p-4 min-h-[500px] border border-gray-300"
     >
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-3xl">{emoji}</span>
-        <h2 className="text-2xl font-bold text-white">
-          {title}
-        </h2>
-        <span className={`ml-auto bg-${color}-500/30 text-${color}-200 px-3 py-1 rounded-full text-sm font-semibold`}>
-          {tasks.length}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-2xl text-gray-700">{title}</span>
+        <span className="ml-auto bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+          {count}
         </span>
       </div>
       <div className="space-y-3">
