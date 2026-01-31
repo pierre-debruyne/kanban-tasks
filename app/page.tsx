@@ -5,8 +5,8 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
-  useSensor,
-  DragEndEvent
+  DragEndEvent,
+  UniqueIdentifier
 } from "@dnd-kit/core"
 import {
   SortableContext,
@@ -16,7 +16,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 
 interface Task {
-  id: string
+  id: UniqueIdentifier
   title: string
   description?: string
   priority: "low" | "medium" | "high"
@@ -26,9 +26,9 @@ interface Task {
 
 interface SortableTaskProps {
   task: Task
-  id: string
+  id: UniqueIdentifier
   getPriorityColor: (priority: Task["priority"]) => string
-  onMove: (taskId: string, newStatus: Task["status"]) => void
+  onMove: (taskId: UniqueIdentifier, newStatus: Task["status"]) => void
   onDelete: () => void
 }
 
@@ -76,7 +76,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
         </span>
         <div className="flex gap-2">
           <button
-            onClick={() => onMove("todo")}
+            onClick={() => onMove(task.id, "todo")}
             className={`text-sm px-2 py-1 rounded-lg transition-all ${
               task.status === "todo" ? "opacity-50 cursor-not-allowed" : "hover:bg-purple-500/30 text-purple-200"
             }`}
@@ -85,7 +85,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
             📝
           </button>
           <button
-            onClick={() => onMove("doing")}
+            onClick={() => onMove(task.id, "doing")}
             className={`text-sm px-2 py-1 rounded-lg transition-all ${
               task.status === "doing" ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500/30 text-blue-200"
             }`}
@@ -94,7 +94,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
             🚧
           </button>
           <button
-            onClick={() => onMove("done")}
+            onClick={() => onMove(task.id, "done")}
             className={`text-sm px-2 py-1 rounded-lg transition-all ${
               task.status === "done" ? "opacity-50 cursor-not-allowed" : "hover:bg-green-500/30 text-green-200"
             }`}
@@ -111,7 +111,7 @@ function SortableTask({ task, id, getPriorityColor, onMove, onDelete }: Sortable
 export default function KanbanBoard() {
   const [tasks, setTasks] = useState<Task[]>([
     {
-      id: "1",
+      id: "1" as UniqueIdentifier,
       title: "Bienvenue sur ton Kanban !",
       description: "Glisse les tâches pour les déplacer entre les colonnes",
       priority: "medium",
@@ -120,7 +120,7 @@ export default function KanbanBoard() {
     }
   ])
 
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskDescription, setNewTaskDescription] = useState("")
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
@@ -129,7 +129,7 @@ export default function KanbanBoard() {
     if (!newTaskTitle.trim()) return
 
     const newTask: Task = {
-      id: Date.now().toString(),
+      id: Date.now().toString() as UniqueIdentifier,
       title: newTaskTitle,
       description: newTaskDescription || undefined,
       priority: newTaskPriority,
@@ -143,13 +143,13 @@ export default function KanbanBoard() {
     setNewTaskPriority("medium")
   }
 
-  const moveTask = (taskId: string, newStatus: Task["status"]) => {
+  const moveTask = (taskId: UniqueIdentifier, newStatus: Task["status"]) => {
     setTasks(tasks.map(task =>
       task.id === taskId ? { ...task, status: newStatus } : task
     ))
   }
 
-  const deleteTask = (taskId: string) => {
+  const deleteTask = (taskId: UniqueIdentifier) => {
     setTasks(tasks.filter(task => task.id !== taskId))
   }
 
@@ -165,17 +165,9 @@ export default function KanbanBoard() {
     }
   }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10
-      }
-    })
-  )
-
   const handleDragStart = (event: any) => {
     const { active } = event
-    setActiveId(active.id as string)
+    setActiveId(active.id as UniqueIdentifier)
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -197,7 +189,6 @@ export default function KanbanBoard() {
 
   return (
     <DndContext
-      sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -302,8 +293,8 @@ function Column({
   title: string
   color: string
   getPriorityColor: (priority: Task["priority"]) => string
-  onMove: (taskId: string, newStatus: Task["status"]) => void
-  onDelete: (taskId: string) => void
+  onMove: (taskId: UniqueIdentifier, newStatus: Task["status"]) => void
+  onDelete: (taskId: UniqueIdentifier) => void
 }) {
   return (
     <div
